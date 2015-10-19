@@ -1,0 +1,62 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+</head>
+<br>-----------------站点数据接口-----------------------
+<br>URL：http://ilab.tongji.edu.cn/pm25/web/restful/<数据名称>?<参数>
+<br>方法：GET 
+<br>数据名称：area-positions（城市的监测站及其坐标），air-qualities（监测站的空气质量）,
+<br>参数形式：para1=x1&amp;para2=x2&amp;para3=x3
+<br>返回格式：默认返回XML，在HTTP Header中加入"Accept:application/json"可得到Json格式数据
+<br>
+<br>Examples
+<br>监测站
+<br>返回上海的检测站信息: http://ilab.tongji.edu.cn/pm25/web/restful/area-positions?area=上海
+<br>空气质量
+<br>返回上海的最新的几条数据: http://ilab.tongji.edu.cn/pm25/web/restful/air-qualities?area=上海    
+<br>
+
+<br>-----------------UrbanAir数据接口-------------------
+<br>URL：http://ilab.tongji.edu.cn/pm25/web/restful/urban-airs?time_point=XXX&longitude=XXX&latitude=XXX
+<br>URL2: http://urbanair.msra.cn/U_Air/SearchGeoPoint?Latitude=XXX&Longitude=XXX&Culture=zh-CN&Standard=0
+<br>方法：GET 
+<br>数据名称：time_point(时间点)，longitude(经度)，latitude(纬度)
+<br>返回该点的空气质量数据，若返回的内容大小为零表示未找到这个点的数据
+<br>示例：http://ilab.tongji.edu.cn/pm25/web/restful/urban-airs?time_point=2015-10-14&nbsp;14:00:00&longitude=116.455&latitude=39.91
+<br>
+<br>
+<br>
+<br>-----------------手机数据接口-----------------------
+<br>1. 上传
+<br>URL：http://ilab.tongji.edu.cn/pm25/web/restful/mobile-data/create
+<br>方法：POST
+<br>ContentType：application/json
+<br>Content：
+<br>Json格式数据，以下均为必需字段
+<div style="padding-left: 30px;">
+<br>{
+<br>'userid' : "1", //[int unsigned]用户id，非用户名，此字段和user表的id有外键约束，目前user表仅有id为1的一个用户，所以测试时userid请设置为1
+<br>'time_point' :"2015-08-20 12:00:00",
+<br>'longitude' : "123.567891", //[float 6位小数]
+<br>'latitude' : "123.567891", //[float 6位小数]
+<br>'outdoor' : "1", //[整数]是否在室外
+<br>'status' : "1", //[整数]运动状态，1=walk 2=running 3=biking 。。。？
+<br>'steps' : "12", //[整数]步数
+<br>'avg_rate': "12", //[float 2位小数]平均心率
+<br>'ventilation_volume' : "12", //[float 2位小数]通气量
+<br>'pm25': "12", //[float 2位小数]pm25浓度
+<br>'source': "2" //[整数]数据来源， 1=station 2=device。。？
+<br>} response的状态码为201表示上传成功
+</div>
+<br>2. 读取
+<br>URL：http://ilab.tongji.edu.cn/pm25/web/restful/mobile-datas
+<br>方法：GET
+<br>参数：userid和time_point为必需参数
+<br>示例：http://localhost/pm25/web/restful/mobile-datas?userid=1&time_point=2015-08-20
+<br>
+<br>-----------------805设备数据接口-----------------------
+<br>URL：http://ilab.tongji.edu.cn/pm25/web/restful/device-datas
+<br>方法：GET
+<br>参数：devid和time_point为必需参数
+<br>示例：http://ilab.tongji.edu.cn/pm25/web/restful/device-datas?devid=1000-A215&time_point=2015-08-26
+</html>

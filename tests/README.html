@@ -1,0 +1,138 @@
+<p>This directory contains various tests for the basic application.</p>
+
+<p>Tests in <code>codeception</code> directory are developed with <a href="http://codeception.com/">Codeception PHP Testing Framework</a>.</p>
+
+<p>After creating the basic application, follow these steps to prepare for the tests:</p>
+
+<ol>
+<li>Install Codeception if it's not yet installed:</li>
+</ol>
+
+<p><code>
+composer global require "codeception/codeception=2.0.*"
+composer global require "codeception/specify=*"
+composer global require "codeception/verify=*"
+</code></p>
+
+<p>If you've never used Composer for global packages run <code>composer global status</code>. It should output:</p>
+
+<p><code>
+Changed current directory to &lt;directory&gt;
+</code></p>
+
+<p>Then add <code>&lt;directory&gt;/vendor/bin</code> to you <code>PATH</code> environment variable. Now we're able to use <code>codecept</code> from command
+line globally.</p>
+
+<ol>
+<li>Install faker extension by running the following from template root directory where <code>composer.json</code> is:</li>
+</ol>
+
+<p><code>
+composer require --dev yiisoft/yii2-faker:*
+</code></p>
+
+<ol>
+<li>Create <code>yii2_basic_tests</code> database and update it by applying migrations:</li>
+</ol>
+
+<p><code>
+codeception/bin/yii migrate
+</code></p>
+
+<ol>
+<li>Build the test suites:</li>
+</ol>
+
+<p><code>
+codecept build
+</code></p>
+
+<ol>
+<li>In order to be able to run acceptance tests you need to start a webserver. The simplest way is to use PHP built in
+webserver. In the <code>web</code> directory execute the following:</li>
+</ol>
+
+<p><code>
+php -S localhost:8080
+</code></p>
+
+<ol>
+<li>Now you can run the tests with the following commands:</li>
+</ol>
+
+<p>```</p>
+
+<h1>run all available tests</h1>
+
+<p>codecept run</p>
+
+<h1>run acceptance tests</h1>
+
+<p>codecept run acceptance</p>
+
+<h1>run functional tests</h1>
+
+<p>codecept run functional</p>
+
+<h1>run unit tests</h1>
+
+<p>codecept run unit
+```</p>
+
+<h2>Code coverage support</h2>
+
+<p>By default, code coverage is disabled in <code>codeception.yml</code> configuration file, you should uncomment needed rows to be able
+to collect code coverage. You can run your tests and collect coverage with the following command:</p>
+
+<p>```</p>
+
+<h1>collect coverage for all tests</h1>
+
+<p>codecept run --coverage-html --coverage-xml</p>
+
+<h1>collect coverage only for unit tests</h1>
+
+<p>codecept run unit --coverage-html --coverage-xml</p>
+
+<h1>collect coverage for unit and functional tests</h1>
+
+<p>codecept run functional,unit --coverage-html --coverage-xml
+```</p>
+
+<p>You can see code coverage output under the <code>tests/_output</code> directory.</p>
+
+<h3>Remote code coverage</h3>
+
+<p>When you run your tests not in the same process where code coverage is collected, then you should uncomment <code>remote</code> option and its
+related options, to be able to collect code coverage correctly. To setup remote code coverage you should follow <a href="http://codeception.com/docs/11-Codecoverage">instructions</a>
+from codeception site.</p>
+
+<ol>
+<li><p>install <code>Codeception c3</code> remote support <code>composer require "codeception/c3:*"</code>;</p></li>
+<li><p>copy <code>c3.php</code> file under your <code>web</code> directory;</p></li>
+<li><p>include <code>c3.php</code> file in your <code>index-test.php</code> file before application run, so it can catch needed requests.</p></li>
+</ol>
+
+<p>Configuration options that are used by remote code coverage:</p>
+
+<ul>
+<li>c3_url: url pointing to entry script that includes <code>c3.php</code> file, so <code>Codeception</code> will be able to produce code coverage;</li>
+<li>remote: whether to enable remote code coverage or not;</li>
+<li>remote_config: path to the <code>codeception.yml</code> configuration file, from the directory where <code>c3.php</code> file is located. This is needed
+so that <code>Codeception</code> can create itself instance and collect code coverage correctly.</li>
+</ul>
+
+<p>By default <code>c3_url</code> and <code>remote_config</code> setup correctly, you only need to copy and include <code>c3.php</code> file in your <code>index-test.php</code></p>
+
+<p>After that you should be able to collect code coverage from tests that run through <code>PhpBrowser</code> or <code>WebDriver</code> with same command
+as for other tests:</p>
+
+<p>```</p>
+
+<h1>collect coverage from remote</h1>
+
+<p>codecept run acceptance --coverage-html --coverage-xml
+```</p>
+
+<p>Please refer to <a href="http://codeception.com/docs/01-Introduction">Codeception tutorial</a> for
+more details about writing and running acceptance, functional and unit tests.</p>
