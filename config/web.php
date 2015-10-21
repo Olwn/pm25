@@ -52,7 +52,7 @@ $config = [
                 ],
                 [
                     'class' => 'yii\rest\UrlRule',
-                    'controller' => 'restful/area--position', 
+                    'controller' => 'restful/area-position', 
                 ],
                 [
                     'class' => 'yii\rest\UrlRule',
@@ -61,7 +61,6 @@ $config = [
                 [
                     'class' => 'yii\rest\UrlRule',
                     'controller' => 'restful/mobile-data',
-                    'extraPatterns' => ['search' => 'search']
                 ],
                 [
                     'class' => 'yii\rest\UrlRule',
@@ -70,6 +69,7 @@ $config = [
                 [
                     'class' => 'yii\rest\UrlRule',
                     'controller' => 'restful/urban-air',
+                    'extraPatterns' => ['search' => 'search']
                 ],
                     'create/data_pm25in' => 'restful/create/data_pm25in',
                     'create/data_device' => 'restful/create/data_device',
