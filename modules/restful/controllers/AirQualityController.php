@@ -1,18 +1,30 @@
 <?php
 
 namespace app\modules\restful\controllers;
-
+use yii\helpers\ArrayHelper;
 use Yii;
 use yii\data\ActiveDataProvider;
+use yii\filters\auth\QueryParamAuth;
 
 class AirQualityController extends \yii\rest\ActiveController
 {
     public $modelClass = 'app\models\AirQuality';
+
     public function actionIndex()
     {
         return $this->render('index');
     }
-
+    /*
+    public function behaviors()
+    {
+        var_dump(QueryParamAuth:: 
+            () ) ;
+        return ArrayHelper::merge(parent::behaviors(), [
+            'authenticator' => [
+                'class' => QueryParamAuth::className()
+            ],
+        ]);
+    }*/
     public function actions()
     {
         $actions = parent::actions();

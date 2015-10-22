@@ -20,6 +20,7 @@ $config = [
         'user' => [
             'identityClass' => 'app\models\User',
             'enableAutoLogin' => true,
+            'enableSession' => false,
         ],
         'errorHandler' => [
             'errorAction' => 'site/error',
@@ -70,6 +71,14 @@ $config = [
                     'class' => 'yii\rest\UrlRule',
                     'controller' => 'restful/urban-air',
                     'extraPatterns' => ['search' => 'search']
+                ],
+                [
+                    'class' => 'yii\rest\UrlRule',
+                    'controller' => 'restful/user',
+                    'extraPatterns' => [
+                        'POST gettoken' => 'gettoken',
+                        'POST logon' => 'logon'
+                    ],
                 ],
                     'create/data_pm25in' => 'restful/create/data_pm25in',
                     'create/data_device' => 'restful/create/data_device',
