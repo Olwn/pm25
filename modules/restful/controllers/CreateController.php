@@ -54,6 +54,8 @@ class CreateController extends Controller
         $this->token = require(__DIR__.'/token.php');
         $this->datePath = __DIR__ . "/dateLastQuery.txt";
         $this->dateLastQuery = $this->getDateLastQuery();
+        set_time_limit(0);//0表示没有限制
+        ini_set('memory_limit','500M');
     }
     /**
      * This command echoes what you have entered as the message.

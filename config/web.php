@@ -77,7 +77,9 @@ $config = [
                     'controller' => 'restful/user',
                     'extraPatterns' => [
                         'POST gettoken' => 'gettoken',
-                        'POST logon' => 'logon'
+                        'POST logon' => 'logon',
+                        'POST login' => 'login',
+                        'test' => 'test'
                     ],
                 ],
                     'create/data_pm25in' => 'restful/create/data_pm25in',

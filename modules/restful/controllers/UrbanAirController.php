@@ -33,11 +33,11 @@ class UrbanAirController extends \yii\rest\ActiveController
         $obj = json_decode($result);
         if(isset($obj->PM25))
         {
-            $obj->source = '1';
+            $obj->status = '1';
             return $obj;
         }
         
-        return $this->queryStationData($conditions);
+        return $this->queryStationData($conditions, NULL);
     }
 
     public function prepareDataProvider()
@@ -72,7 +72,7 @@ class UrbanAirController extends \yii\rest\ActiveController
         $model = new $this->modelClass;
         $models = $dataProvider->getModels();
         if(count($models) == 0)
-            return $queryStationData($conditions);
+            return $this->queryStationData($conditions, $conditions['time_point']);
 
         $min_diff = 99999;
         $index = 0;
@@ -86,12 +86,12 @@ class UrbanAirController extends \yii\rest\ActiveController
                 $min_diff = $distance;
             }
         }
-
+        $models[$index]['status'] = 1;
         $dataProvider->setModels($models[$index]);
 
         return $dataProvider;
     }
-    public function queryStationData($conditions)
+    public function queryStationData($conditions, $time)
     {
         $query = (new\yii\db\Query())
                 ->select('*')
@@ -99,6 +99,7 @@ class UrbanAirController extends \yii\rest\ActiveController
                 ->Where(['between', 'Longitude', $conditions['longitude']-1, $conditions['longitude']+1])
                 ->AndWhere(['between', 'Latitude', $conditions['latitude']-1, $conditions['latitude']+1]);
         $models = $query->all();
+
         $min_diff = 999999;
         $station_code;
         foreach ($models as $model) {
@@ -115,13 +116,19 @@ class UrbanAirController extends \yii\rest\ActiveController
                 ->where(['=', 'station_code', $station_code])
                 ->orderBy(['time_point' => SORT_DESC])
                 ->limit(1);
+        if($time != NULL)
+        {
+            $query->AndWhere(['=', 'time_point', $time]);
+        }
         $result = $query->all();
         if(count($result) > 0)
         {
             $result[0]['PM25']=$result[0]['pm2_5'];
-            $result[0]['source'] = '2';
+            $result[0]['status'] = '2';
             unset($result[0]['pm2_5']);
         }
+        else
+            $result[0]['status'] = 0;
         return $result;
     }
 }
