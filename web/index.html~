@@ -44,7 +44,7 @@
 <br>'password' : "xxxxxx"
 <br>}
 </div>
-<br>Response数据{status: -1或0或1, access_token: XCASDADAWE23123, userid: 9} -1表示用户名未注册 0表示输入错误 1表示登录成功并返回token和id
+<br>Response数据{status: -1或0或1, access_token: XCASDADAWE23123, userid: 9} -1表示用户名未注册 0表示密码错误 1表示登录成功并返回token和id
 
 <br>
 <br>-----------------手机数据接口-----------------------

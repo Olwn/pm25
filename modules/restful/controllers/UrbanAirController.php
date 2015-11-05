@@ -124,8 +124,10 @@ class UrbanAirController extends \yii\rest\ActiveController
         if(count($result) > 0)
         {
             $result[0]['PM25']=$result[0]['pm2_5'];
+            $result[0]['AQI']=$result[0]['aqi'];
             $result[0]['status'] = '2';
             unset($result[0]['pm2_5']);
+            unset($result[0]['aqi']);
         }
         else
             $result[0]['status'] = 0;
