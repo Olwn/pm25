@@ -5,6 +5,7 @@ namespace app\modules\restful\controllers;
 use Yii;
 use yii\data\ActiveDataProvider;
 
+
 class UserController extends \yii\rest\ActiveController
 {
 	public $modelClass = 'app\models\User';
@@ -58,6 +59,12 @@ class UserController extends \yii\rest\ActiveController
             'status' => '-1',
             'access_token' => -1,
             'userid' => 0,
+            'name' => '',
+            'firstname' => '',
+            'lastname' => '',
+            'sex' => 0,
+            'email' => '',
+            'phone' => ''
             );
         $paras = Yii::$app->request->post();
         $user = \app\models\User::find()->where(['name' => $paras['name']])->one();
@@ -71,12 +78,48 @@ class UserController extends \yii\rest\ActiveController
             $result['status'] = 1;
             $result['access_token'] = $user->access_token;
             $result['userid'] = $user->id;
+            $result['name'] = $user->name;
+            $result['firstname'] = $user->firstname;
+            $result['lastname'] = $user->lastname;
+            $result['sex'] = $user->sex;
+            $result['email'] = $user->email;
+            $result['phone'] = $user->phone;
         }
         else
         {
             $result['status'] = 0;
 
         }
+        return $result;
+
+    }
+    public function actionFindPassword()
+    {
+        $result = array(
+            'status' => -1,
+            );
+        $paras = Yii::$app->request->get();
+        if(!isset($paras['name']))
+            return $result;
+
+        $name = $paras['name'];
+        $user = \app\models\User::find()->where(['name' => $paras['name']])->one();
+        if($user == NULL)
+        {
+            $result['status'] = 0;
+            return $result;
+        }
+
+        $mail= Yii::$app->mailer->compose();   
+        $mail->setTo($user->email);  
+        $mail->setSubject("Reset Password");  
+        //$mail->setTextBody('zheshisha ');   //发布纯文字文本
+        $mail->setHtmlBody("Please click the link to reset your password"
+                            . "<br>" . 'http://ilab.tongji.edu.cn/pm25/web/site/reset'. '?name=' . $user->name . '&amp;' . 'access_token=' . $user->access_token);    //发布可以带html标签的文本
+        if($mail->send())  
+            $result['status'] = 1;
+        else  
+            $result['status'] = 0;
         return $result;
 
     }
@@ -98,6 +141,26 @@ class UserController extends \yii\rest\ActiveController
     		);
     	}
     	return "error";
+
+    }
+
+    public function actionUpdatePassword()
+    {
+        $result = array(
+            'status' => -1,
+            'access_token' => ''
+            );
+        $paras = Yii::$app->request->post();
+        $token = md5($paras['password'], false);
+        $user = \app\models\User::find()->where(['name' => $paras['name']])->one();
+        if($user != NULL && $user->access_token == $paras['access_token'])
+        {
+            $user->access_token = $token;
+            $result['status'] = 1;
+            $result['access_token'] = $token;
+            $user->update();
+        }
+        return $result;
 
     }
 

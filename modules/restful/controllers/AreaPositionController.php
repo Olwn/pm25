@@ -31,7 +31,7 @@ class AreaPositionController extends \yii\rest\ActiveController
     public function queryWithConditions($conditions)
     {
         $query = (new \yii\db\Query())
-            ->select(['area', 'position_name', 'latitude', 'longtitude', 'alias'])
+            ->select(['area', 'position_name', 'latitude', 'longitude', 'alias'])
             ->from('area_position')
             ->where($conditions);
 
