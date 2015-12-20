@@ -86,7 +86,7 @@
 
 <br>
 <br>-----------------手机数据接口-----------------------
-<br><strong>1. 上传</strong>
+<br><strong>1. 单个上传（即将失效）</strong>
 <br>URL：http://ilab.tongji.edu.cn/pm25/web/restful/mobile-data/create
 <br>方法：<strong>POST</strong>
 <br>ContentType：application/json
@@ -107,7 +107,18 @@
 <br>'source': "2" //[整数]数据来源， 1=station 2=device。。？
 <br>} response的状态码为201表示上传成功
 </div>
-<br><strong>2. 读取</strong>
+<br><strong>2. 批量上传</strong>
+<br>URL：http://ilab.tongji.edu.cn/pm25/web/restful/mobile-data/upload
+<br>方法：<strong>POST</strong>
+<br>ContentType：application/json
+<br>Content：
+<br>Json格式数据，单条数据的字段同1
+<div style="padding-left: 30px;">
+<br>{'data': [{data1}, {data2}, {data3}...]}
+<br>返回{'succeed_count': N} 成功写入N条记录
+</div>
+
+<br><strong>3. 读取</strong>
 <br>URL：http://ilab.tongji.edu.cn/pm25/web/restful/mobile-datas
 <br>方法：GET
 <br>参数：userid和time_point为必需参数

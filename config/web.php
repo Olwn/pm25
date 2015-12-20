@@ -72,6 +72,9 @@ $config = [
                 [
                     'class' => 'yii\rest\UrlRule',
                     'controller' => 'restful/mobile-data',
+                    'extraPatterns' => [
+                        'POST upload' => 'upload'
+                    ]
                 ],
                 [
                     'class' => 'yii\rest\UrlRule',

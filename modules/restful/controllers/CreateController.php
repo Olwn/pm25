@@ -86,7 +86,7 @@ class CreateController extends Controller
 				$class = 'app\models\AirQuality';
 				foreach ($mixed as $value)
 				{
-					$this->saveModel($class, $value);
+					DefaultController::saveModel($class, $value);
 				}
 			}
         }
@@ -106,7 +106,7 @@ class CreateController extends Controller
 				$class = 'app\models\CityAir';
 				foreach ($mixed as $value)
 				{
-					$this->saveModel($class, $value);
+					DefaultController::saveModel($class, $value);
 				}
 			}
         }
@@ -203,8 +203,7 @@ class CreateController extends Controller
         foreach ($this->cities as $city => $allpoints_url) {
             $points = file_get_contents($allpoints_url);
             $points = json_decode($points);
-            var_dump(count($points->AllCity));
-            //continue;
+            
             foreach ($points->AllCity as $point) {
                 $Lon = ($point->Lng_max + $point->Lng_min)/2;
                 $Lat = ($point->Lat_max + $point->Lat_min)/2;
@@ -251,31 +250,6 @@ class CreateController extends Controller
         $urbanData->time_point = $objDateTIme->format('Y-m-d H:i:s'); 
         
         $urbanData->save(false);
-    }
-
-    private function saveModel($class, $value)
-    {
-        $model = new $class();
-        $class = substr($class, strripos($class, "\\")+1);
-        $data = [$class => $value];
-        if (!$model->load($data))
-        {
-            \Yii::getLogger()->log("FAIL LOADING DATA: " , Logger::LEVEL_INFO);
-        }
-        try
-        {
-            if (!$model->save())
-            {
-                \Yii::getLogger()->log("FAIL SAVING DATA: " , Logger::LEVEL_INFO);
-                echo "FAIL SAVING DATA: \n" . implode("\n", $value);
-                var_dump($model->getErrors());
-            }
-        }
-        catch (\Exception $e) 
-        {
-            echo 'EXCEPTION: '. $e->getMessage(), "\n";
-            \Yii::getLogger()->log("FAIL SAVING DATA: " . $e->getMessage(), Logger::LEVEL_INFO);
-        }
     }
 
     /**

@@ -34,14 +34,25 @@ class MobileDataController extends \yii\rest\ActiveController
         return $this->queryWithConditions($conditions);
     }
 
+    public function actionUpload()
+    {
+        $data = Yii::$app->request->post();
+        $result = array(
+            'succeed_count' => 0
+            );
+
+        foreach ($data['data'] as $columns) {
+            $result['succeed_count']  += DefaultController::saveModel($this->modelClass, $columns);
+        }
+        return $result;
+    }
+
     public function queryWithConditions($conditions)
     {
         $query = (new \yii\db\Query())
             ->select('*')
             ->from('data_mobile');
             
-
-
         if(strlen($conditions['time_point']) < 15 )
         {
             $query->where(['=', "DATE_FORMAT(time_point, '%Y-%m-%d')", $conditions['time_point']]);
