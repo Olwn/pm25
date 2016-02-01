@@ -18,14 +18,25 @@ class UserController extends \yii\rest\ActiveController
     public function actionLogon()
     {
     	$result = array(
-    		'status' => 'failed',
+    		'status' => -1,
     		'access_token' => -1,
             'userid' => 0,
+            'message' => ''
     		);
 
     	$paras = Yii::$app->request->post();
         //$query->
-
+        if(!isset($paras['password'], $paras['name'], $paras['email'], $paras['firstname'], $paras['lastname'], $paras['sex'], $paras['phone'], $paras['code']))
+        {
+            $result['message'] = 'lack of parameters';
+            return $result;
+        }
+        if(!$this->checkInvitation($paras['code']))
+        {
+            $result['message'] = 'wrong invitation code';
+            $result['status'] = '2'
+            return $result;
+        }
         $user = new \app\models\User();
     	$user->access_token = md5($paras['password'], false);
     	$user->name = $paras['name'];
@@ -40,14 +51,31 @@ class UserController extends \yii\rest\ActiveController
             $user->save();
     		$result['access_token'] = $user->access_token;
     		$result['status'] = 1;
-            $result['userid'] = $user->id;            
+            $result['userid'] = $user->id;           
+            $result['message'] = 'registered succesfully';
     	}
         else
         {
+            $result['message'] = 'registered failed';
             $result['status'] = 0;   
         }
     	return $result;
     }
+
+    public function checkInvitation($code)
+    {
+        $query = (new\yii\db\Query())
+                ->select('*')
+                ->from('code');
+        $items = $query->all();
+        foreach ($items as $item) {
+            if(strval($code) == strval($item['code']))
+                return true;
+
+        return false;
+        }
+    }
+
     public function actionTest()
     {
         return 'test';

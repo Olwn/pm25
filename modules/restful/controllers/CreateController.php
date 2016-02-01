@@ -32,6 +32,7 @@ class CreateController extends Controller
 {
     private $urlStations = "http://www.pm25.in/api/querys/all_cities.json";
     private $urlCities = "http://www.pm25.in/api/querys/aqi_ranking.json";
+    //private $urlCities = "http://www.pm25.in/api/querys/pm2_5.json?city=珠海";
     private $urlDevices = "http://api.novaecs.com/?key=aidhe38173yfh&fun=getLastData&param=1000-A215";
     private $urlUrbanAir = "http://urbanair.msra.cn/U_Air/SearchGeoPoint?Culture=zh-CN&Standard=0";
     private $cities = array(
@@ -72,7 +73,9 @@ class CreateController extends Controller
      */
     public function actionData_pm25in()
     {
+        
         $allStationsJsonData = $this->queryAllStationsJSONData();
+        
         $mixed = json_decode($allStationsJsonData, true);
         if (isset($mixed['error']))
         {
@@ -90,10 +93,13 @@ class CreateController extends Controller
 				}
 			}
         }
+        return $allStationsJsonData;
         unset($allStationsJsonData);
         unset($mixed);
+        
         $allCitiesJsonData = $this->queryOnlyCitiesJSONData();
         $mixed = json_decode($allCitiesJsonData, true);
+
         if (isset($mixed['error']))
         {
             echo $mixed['error'];
@@ -106,7 +112,8 @@ class CreateController extends Controller
 				$class = 'app\models\CityAir';
 				foreach ($mixed as $value)
 				{
-					DefaultController::saveModel($class, $value);
+					if(DefaultController::saveModel($class, $value) == false)
+                        echo "error";
 				}
 			}
         }
@@ -246,7 +253,8 @@ class CreateController extends Controller
         $urbanData->longitude = $longitude;
         $urbanData->latitude = $latitude;
         $urbanData->city = $cityId;
-        $objDateTIme = \DateTime::createFromFormat("Y/n/j h:i A", "2015/" . $mixed->UpdateTime);
+        //!!!!This must be modified. '2016' is just right for now!!!!
+        $objDateTIme = \DateTime::createFromFormat("Y/n/j h:i A", date('Y') . "/" . $mixed->UpdateTime);
         $urbanData->time_point = $objDateTIme->format('Y-m-d H:i:s'); 
         
         $urbanData->save(false);

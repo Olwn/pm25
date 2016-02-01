@@ -4,6 +4,7 @@ namespace app\modules\restful\controllers;
 
 use Yii;
 use yii\data\ActiveDataProvider;
+date_default_timezone_set('PRC');
 
 class UrbanAirController extends \yii\rest\ActiveController
 {
@@ -35,8 +36,8 @@ class UrbanAirController extends \yii\rest\ActiveController
             $result['status'] = 2;
             return $result;
         }
+
         $connection = Yii::$app->db;  
-        //$sql="SELECT * FROM `express_template`  WHERE `ec_id`=$ec_id";  
         $sql = "select avg(aqi) as AQI, avg(pm2_5) as PM25, date_format(time_point, '%Y-%m-%d') as Date
                  from air_quality where station_code ='" . $station_code . "'group by date_format(time_point, '%Y-%m-%d') 
                  order by time_point desc limit " . $conditions['days'];
@@ -46,14 +47,19 @@ class UrbanAirController extends \yii\rest\ActiveController
     }
     public function actionSearchHistory()
     {
-        $results = array(
+        $ret = array(
             'status' => 1,
+            'message' => 'successfully get data',
+            'count' => 0,
             'data' => ''
             );
         $conditions = Yii::$app->request->get();
         $date = $conditions['time_point'];
-        if(!isset($conditions['use_station']) || $conditions['use_station'] != '1')
+        //if(!isset($conditions['use_station']) || $conditions['use_station'] != '1')
         {
+            $j = 0;
+            $result = array();
+            $station_code = $this->queryStationCode($conditions['longitude'], $conditions['latitude']);
             for ($i=0; $i < 24; $i++) 
             { 
                 $time_point = $date. ' ';
@@ -63,85 +69,108 @@ class UrbanAirController extends \yii\rest\ActiveController
                     $time_point = $time_point . strval($i);
                 $time_point = $time_point . ':00:00';
                 $conditions['time_point'] = $time_point;
-                $result[$i] = $this->queryUrbanAirDatabase($conditions);
-                $results['data'] = $result;
-
-                if(count($result) == 24)
-                    return $results;    
+                $data = $this->queryDataBaseUrbanAir($conditions['longitude'], $conditions['latitude'], $conditions['time_point']);
+                if($data == NULL)
+                    $data = $this->queryDatabasePM25ByCode($station_code, $conditions['time_point']);
+                if($data != NULL)
+                $result[$j++] = $data;
             }
         }
         
-        $station_code = $this->queryStationCode($conditions['longitude'], $conditions['latitude']);
-        $query = (new\yii\db\Query())
-                ->select('*')
-                ->from('air_quality')
-                ->where(['=', 'station_code', $station_code]);
-        $query->AndWhere(['=', "date_format(time_point, '%Y-%m-%d')", $date]);
-        
-        $result = $query->all();
-        $results['status'] = 2;
-        $results['data'] = $result;
-        return $results;
+        if(count($result) == 0)
+        {
+            $ret['status'] = 0;
+            $ret['message'] = 'no data of this position';
+        }
+        $ret['data'] = $result;
+        $ret['count'] = count($result);
+        return $ret;
 
     }
     public function actionSearch()
     {
         $conditions = Yii::$app->request->get();
-        if(isset($conditions['time_point']))
-            return $this->searchPoint($conditions);
-        $url = "http://urbanair.msra.cn/U_Air/SearchGeoPoint?Culture=zh-CN&Standard=0";
-        $result = file_get_contents($url . "&Longitude=" . $conditions['longitude'] . "&Latitude=" . $conditions['latitude']);
-        $obj = json_decode($result);
-
-        if(isset($conditions['use_station']) && $conditions['use_station']=='1')
-            return $this->queryStationData($conditions, NULL, 1);
-        if(isset($obj->PM25))
-        {
-            $obj->status = '1';
-            return $obj;
-        }
+        $ret = array(
+            'status' => 1,
+            'message' => 'successfully get data',
+            'data' => NULL
+            );
         
+        if(isset($conditions['time_point']))
+            $ret['data'] = $this->queryDataBaseHistory($conditions);
+        else if(isset($conditions['use_station']) && $conditions['use_station']=='1')
+            $ret['data'] = $this->queryDatabasePM25($conditions['longitude'], $conditions['latitude'], NULL);
+        else
+        {
+            //Search Urban Air first
+            $url = "http://urbanair.msra.cn/U_Air/SearchGeoPoint?Culture=zh-CN&Standard=0";
+            $ret['data'] = $this->queryUrbanAir($conditions['longitude'], $conditions['latitude']);    
+            //If it's none in urban air, search station data
+            if(!isset($ret['data']))
+                $ret['data'] = $this->queryDatabasePM25($conditions['longitude'], $conditions['latitude'], NULL);
+        }
+        if($ret['data'] == NULL)
+        {
+            $ret['status'] = 0;
+            $ret['message'] = 'no data about this position';
+        }
+        return $ret;
+
     }
 
-    public function searchPoint()
+    public function queryUrbanAir($longitude, $latitude)
+    {
+        $url = "http://urbanair.msra.cn/U_Air/SearchGeoPoint?Culture=zh-CN&Standard=0";
+        try
+        {
+        $result = file_get_contents($url . "&Longitude=" . $longitude . "&Latitude=" . $latitude, false, 
+                    stream_context_create(array('http' => array('method'=>"GET", 'timeout'=>60))));
+        }
+        catch(yii\base\ErrorException $e)
+        {
+            return NULL;
+        }
+
+        $obj = json_decode($result);
+        if(!isset($obj->PM25))
+            return NULL;
+        $t = \DateTime::createFromFormat("Y/n/j h:i A", date('Y') . "/" . $obj->UpdateTime)->format('Y-m-d H:i:s');
+        return array('PM25'=> $obj->PM25, 'AQI' => $obj->AQI, 'time_point' => $t, 'source' => 1);
+    }
+
+    public function queryDataBaseHistory()
     {
         $conditions = Yii::$app->request->get();
-        //echo $conditions['time_point'];
-		if (!isset(/*$conditions['city'],*/ $conditions['latitude'], $conditions['longitude'], $conditions['time_point']))
+		if (!isset($conditions['latitude'], $conditions['longitude'], $conditions['time_point']))
 		{
 			return null;
 		}
 
         if(isset($conditions['use_station']) && $conditions['use_station']=='1')
-            return $this->queryStationData($conditions, NULL, 1);
+            return $this->queryDatabasePM25($conditions['longitude'], $conditions['latitude'], $conditions['time_point']);
         else
         {
-            $result = $this->queryUrbanAirDatabase($conditions);
+            $result = $this->queryDataBaseUrbanAir($conditions['longitude'], $conditions['latitude'], $conditions['time_point']);
             if($result != NULL)
                 return $result;
             else
-                return $this->queryStationData($conditions, NULL, 1);
+                return $this->queryDatabasePM25($conditions['longitude'], $conditions['latitude'], $conditions['time_point']);
         }
         
     }
 
-    public function queryUrbanAirDatabase($conditions)
+    public function queryDataBaseUrbanAir($longitude, $latitude, $time_point)
     {
         $query = (new \yii\db\Query())
             ->select('*')
             ->from('urban_air')
-            ->Where(['=','time_point', $conditions['time_point']]);
+            ->Where(['=','time_point', $time_point]);
         
-        $lat = (double)$conditions['latitude'];
-        $lon = (double)$conditions['longitude'];
+        $lat = (double)$latitude;
+        $lon = (double)$longitude;
         $query->AndWhere(['between', 'latitude', $lat-0.05, $lat+0.05]);
         $query->AndWhere(['between', 'longitude', $lon-0.05, $lon+0.05]);
-        /*
-        $dataProvider = new ActiveDataProvider([
-            'query' => $query,
-            'pagination' => false,
-        ]);
-        */
+
         $model = new $this->modelClass;
         $models = $query->all();
         if(count($models) == 0)
@@ -159,13 +188,12 @@ class UrbanAirController extends \yii\rest\ActiveController
                 $min_diff = $distance;
             }
         }
-        $models[$index]['status'] = 1;
-        return $models[$index];
+
+        return array('PM25' => $models[$index]['pm25'], 'AQI' => $models[$index]['aqi'], 'time_point' => $models[$index]['time_point'], 'source' => 1);
     }
-    //mode=1 means querying by time, while mode=0 query by date
-    public function queryStationData($conditions, $time, $mode)
+    
+    public function queryDatabasePM25ByCode($station_code, $time)
     {
-        $station_code = $this->queryStationCode($conditions['longitude'], $conditions['latitude']);
         $query = (new\yii\db\Query())
                 ->select('*')
                 ->from('air_quality')
@@ -177,17 +205,31 @@ class UrbanAirController extends \yii\rest\ActiveController
             $query->AndWhere(['=', 'time_point', $time]);
         }
         $result = $query->all();
+
         if(count($result) > 0)
-        {
-            $result[0]['PM25']=$result[0]['pm2_5'];
-            $result[0]['AQI']=$result[0]['aqi'];
-            $result[0]['status'] = '2';
-            unset($result[0]['pm2_5']);
-            unset($result[0]['aqi']);
-        }
+            return array('PM25' => $result[0]['pm2_5'], 'AQI' => $result[0]['aqi'], 'time_point' => $result[0]['time_point'], 'source' => 2);
         else
-            $result[0]['status'] = 0;
-        return $result;
+            return NULL;
+    }
+    public function queryDatabasePM25($longitude, $latitude, $time)
+    {
+        $station_code = $this->queryStationCode($longitude, $latitude);
+        $query = (new\yii\db\Query())
+                ->select('*')
+                ->from('air_quality')
+                ->where(['=', 'station_code', $station_code])
+                ->orderBy(['time_point' => SORT_DESC])
+                ->limit(1);
+        if($time != NULL)
+        {
+            $query->AndWhere(['=', 'time_point', $time]);
+        }
+        $result = $query->all();
+
+        if(count($result) > 0)
+            return array('PM25' => $result[0]['pm2_5'], 'AQI' => $result[0]['aqi'], 'time_point' => $result[0]['time_point'], 'source' => 2);
+        else
+            return NULL;
     }
 
     public function queryStationCode($longitude, $latitude)
