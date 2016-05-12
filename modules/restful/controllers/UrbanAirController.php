@@ -134,7 +134,12 @@ class UrbanAirController extends \yii\rest\ActiveController
         $obj = json_decode($result);
         if(!isset($obj->PM25))
             return NULL;
-        $t = \DateTime::createFromFormat("Y/n/j h:i A", date('Y') . "/" . $obj->UpdateTime)->format('Y-m-d H:i:s');
+		$am_pm = '';
+		if(strpos($obj->UpdateTime, 'PM') != -1)
+				$am_pm = 'A';
+		else
+				$am_pm = 'a';
+        $t = \DateTime::createFromFormat("Y-m-d h:i " . $am_pm, date('Y-m-d ') . $obj->UpdateTime)->format('Y-m-d H:i:s');
         return array('PM25'=> $obj->PM25, 'AQI' => $obj->AQI, 'time_point' => $t, 'source' => 1);
     }
 

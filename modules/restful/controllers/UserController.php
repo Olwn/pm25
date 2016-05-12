@@ -34,7 +34,7 @@ class UserController extends \yii\rest\ActiveController
         if(!$this->checkInvitation($paras['code']))
         {
             $result['message'] = 'wrong invitation code';
-            $result['status'] = '2'
+            $result['status'] = '2';
             return $result;
         }
         $user = new \app\models\User();

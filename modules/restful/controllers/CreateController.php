@@ -34,6 +34,7 @@ class CreateController extends Controller
     private $urlCities = "http://www.pm25.in/api/querys/aqi_ranking.json";
     //private $urlCities = "http://www.pm25.in/api/querys/pm2_5.json?city=珠海";
     private $urlDevices = "http://api.novaecs.com/?key=aidhe38173yfh&fun=getLastData&param=1000-A215";
+	//private $devices = array('1000-A215', '1000-A043'); 
     private $urlUrbanAir = "http://urbanair.msra.cn/U_Air/SearchGeoPoint?Culture=zh-CN&Standard=0";
     private $cities = array(
         "Beijing" => "http://urbanair.msra.cn/U_Air/GetAllCity?CityId=001&Standard=0&category=1&station=false&Lat_bottom=39.600532656689126&Lat_up=40.22306084378363&Lng_left=115.74797864062502&Lng_right=117.06633801562502",
