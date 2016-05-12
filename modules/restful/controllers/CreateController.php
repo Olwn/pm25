@@ -33,7 +33,7 @@ class CreateController extends Controller
     private $urlStations = "http://www.pm25.in/api/querys/all_cities.json";
     private $urlCities = "http://www.pm25.in/api/querys/aqi_ranking.json";
     //private $urlCities = "http://www.pm25.in/api/querys/pm2_5.json?city=珠海";
-    private $urlDevices = "http://api.novaecs.com/?key=aidhe38173yfh&fun=getLastData&param=1000-A215";
+    private $urlDevices = "http://api.novaecs.com/?key=aidhe38173yfh&fun=getLastData&param=1000-A215,1000-A043";
 	//private $devices = array('1000-A215', '1000-A043'); 
     private $urlUrbanAir = "http://urbanair.msra.cn/U_Air/SearchGeoPoint?Culture=zh-CN&Standard=0";
     private $cities = array(
@@ -94,7 +94,6 @@ class CreateController extends Controller
 				}
 			}
         }
-        return $allStationsJsonData;
         unset($allStationsJsonData);
         unset($mixed);
         
@@ -137,11 +136,11 @@ class CreateController extends Controller
     public function actionData_device()
     {
         $deviceJsonData = $this->queryDeviceJSONData();
-        //return $deviceJsonData;
+		$deviceJsonData = substr($deviceJsonData, 3);
         $mixed = json_decode($deviceJsonData, false)->devs;
-        if (isset($mixed['error']))
+        if (false)
         {
-            echo $mixed['error'];
+            echo "error from novaecs.com";
         }
         else 
         {
@@ -254,9 +253,14 @@ class CreateController extends Controller
         $urbanData->longitude = $longitude;
         $urbanData->latitude = $latitude;
         $urbanData->city = $cityId;
-        //!!!!This must be modified. '2016' is just right for now!!!!
-        $objDateTIme = \DateTime::createFromFormat("Y/n/j h:i A", date('Y') . "/" . $mixed->UpdateTime);
-        $urbanData->time_point = $objDateTIme->format('Y-m-d H:i:s'); 
+
+		$am_pm = '';
+		if(strpos($mixed->UpdateTime, 'PM') != -1)
+				$am_pm = 'A';
+		else
+				$am_pm = 'a';
+        $t = \DateTime::createFromFormat("Y-m-d h:i " . $am_pm, date('Y-m-d ') . $mixed->UpdateTime)->format('Y-m-d H:i:s');
+        $urbanData->time_point = $t; 
         
         $urbanData->save(false);
     }
@@ -303,8 +307,6 @@ class CreateController extends Controller
 
     private function queryDeviceJSONData()
     {
-        echo "Start querying air data from novaecs.com\n";
-        //$path = __DIR__ . "/../all_cities.json";
         $path = $this->urlDevices;
         try 
         {
