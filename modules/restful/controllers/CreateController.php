@@ -33,7 +33,7 @@ class CreateController extends Controller
     private $urlStations = "http://www.pm25.in/api/querys/all_cities.json";
     private $urlCities = "http://www.pm25.in/api/querys/aqi_ranking.json";
     //private $urlCities = "http://www.pm25.in/api/querys/pm2_5.json?city=珠海";
-    private $urlDevices = "http://api.novaecs.com/?key=aidhe38173yfh&fun=getLastData&param=1000-A215,1000-A043";
+    private $urlDevices = "http://api.novaecs.com/?key=aidhe38173yfh&fun=getLastData&param=1000-A215,1000-A043,1000-A2E7,1000-A2E6";
 	//private $devices = array('1000-A215', '1000-A043'); 
     private $urlUrbanAir = "http://urbanair.msra.cn/U_Air/SearchGeoPoint?Culture=zh-CN&Standard=0";
     private $cities = array(
@@ -177,8 +177,11 @@ class CreateController extends Controller
                                    break;
                            }   
                     }
-                    echo $deviceData->temperature . $deviceData->pm25;
-                    $deviceData->time_point = date('Y-m-d H:i:s',$value->data[0]->t);
+
+					$t = getdate($value->data[0]->t);
+					$t_cov = mktime($t['hours'],round($t['minutes']/30)*30,0,$t['mon'],$t['mday'],$t['year']);
+					//$t_cov = mktime($t['hours'],$t['minutes'],0,$t['mon'],$t['mday'],$t['year']);
+					$deviceData->time_point = date('Y-m-d H:i:s',$t_cov);
                     try{
                         //Liechuan ou: If the parameter is 'true', the save proccedure would be failed. I seems the model rules is bad!?!
                         if(!$deviceData->save(false))
@@ -255,7 +258,7 @@ class CreateController extends Controller
         $urbanData->city = $cityId;
 
 		$am_pm = '';
-		if(strpos($mixed->UpdateTime, 'PM') != -1)
+		if(strpos($mixed->UpdateTime, 'PM') !== false)
 				$am_pm = 'A';
 		else
 				$am_pm = 'a';

@@ -23,8 +23,8 @@ class DefaultController extends Controller
             if (!$model->save())
             {
                 \Yii::getLogger()->log("FAIL SAVING DATA: " , Logger::LEVEL_INFO);
-                echo "FAIL SAVING DATA: \n" . implode("\n", $value);
-                //var_dump($model->getErrors());
+                echo "FAIL SAVING DATA: \n" . $value;
+				return 0;
             }
             return 1;
         }

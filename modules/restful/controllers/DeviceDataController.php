@@ -5,10 +5,9 @@ namespace app\modules\restful\controllers;
 use Yii;
 use yii\data\ActiveDataProvider;
 
-class DeviceDataController extends \yii\rest\ActiveController
+class DeviceDataController extends CheckTokenController
 {
     public $modelClass = 'app\models\DeviceData';
-
     public function actionIndex()
     {
         return $this->render('index');
@@ -26,12 +25,29 @@ class DeviceDataController extends \yii\rest\ActiveController
     public function prepareDataProvider()
     {
         $conditions = Yii::$app->request->get();
-        //echo $conditions['time_point'];
-		if (!(isset($conditions['devid']) && isset($conditions['time_point'])))
+        $data = $this->queryWithConditions($conditions)->models;;
+		foreach($data as &$val)
 		{
-			return null;
+				$val = array(
+					'PM25' => $val['pm25'],
+					'time_point' => $val['time_point']
+				);
 		}
-        return $this->queryWithConditions($conditions);
+		if(count($data) == 0)
+		{
+				return array(
+						'status' => 0,
+						'message' => 'no data',
+						'data' => ''
+				);
+		}
+		$ret = array(
+				'status' =>  1,
+				'message' => 'success',
+				'data' => $data
+		);
+		return $ret;
+
     }
 
     public function queryWithConditions($conditions)
@@ -42,14 +58,17 @@ class DeviceDataController extends \yii\rest\ActiveController
             
 
 
-        if(strlen($conditions['time_point']) < 15 )
+        if(strlen($conditions['time_point']) < 15)
         {
             $query->where(['=', "DATE_FORMAT(time_point, '%Y-%m-%d')", $conditions['time_point']]);
         	unset($conditions['time_point']);
-    	}
+			$query->andWhere($conditions);
+		}
+		else
+		{
+			$query->where($conditions);
+		}
         
-
-        $query->andWhere($conditions);
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
             'pagination' => false,

@@ -38,13 +38,14 @@ class UserController extends \yii\rest\ActiveController
             return $result;
         }
         $user = new \app\models\User();
-    	$user->access_token = md5($paras['password'], false);
+    	$user->password = md5($paras['password'], false);
     	$user->name = $paras['name'];
     	$user->email = $paras['email'];
     	$user->firstname = $paras['firstname'];
     	$user->lastname = $paras['lastname'];
     	$user->sex = $paras['sex'];
     	$user->phone = $paras['phone'];
+		$user->access_token = $user->password;
 
     	if ($user->validate()) 
     	{
@@ -101,10 +102,15 @@ class UserController extends \yii\rest\ActiveController
             $result['status'] = -1;
             return $result;
         }
-        if(md5($paras['password']) == $user->access_token)
+        if(md5($paras['password']) == $user->password)
         {
             $result['status'] = 1;
-            $result['access_token'] = $user->access_token;
+			$token = bin2hex(openssl_random_pseudo_bytes(16));
+			$user->old_token = $user->access_token;
+			$user->access_token = $token;
+			$user->last_login = date('Y-m-d H:i:s', time());
+			$user->save();
+            $result['access_token'] = $token;
             $result['userid'] = $user->id;
             $result['name'] = $user->name;
             $result['firstname'] = $user->firstname;
@@ -116,6 +122,7 @@ class UserController extends \yii\rest\ActiveController
         else
         {
             $result['status'] = 0;
+			$result['info']=md5($paras['password']);
 
         }
         return $result;

@@ -2,24 +2,39 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 </head>
-<br>-----------------统一查询接口-----------------------
+<br>-----------------<strong>新增：Token机制</strong>-----------------------
+<br>数据查询和上传必须带一个Token，其目的是访问合法性检查。用户每次登录时会生成一个token，登录接口的返回值包含此值。
+<br>服务器为用户保留最近的两次登录生成的Token，即最新的和上一次登录的。
+<br>
+<br>使用方法：在查询或登录接口加入access_token参数(GET接口添加到URL中，POST请求添加到上传内容中)，
+<br>返回值新增token_status(1=最新的token，2=过期，0=无此用户)和last_login(最后登录时间)。
+<br>客户端在查询或者上传时，若token_status=1，一切正常；若token_status=2，则表明帐号在其他地方登录，此时应该上传last_login之前的数据，然后退出登录。
+<br>无效的token不影响查询数据，但无法上传数据。
+<br>
+<br>
+<br>
+<br>-----------------<strong>即时查询</strong>-----------------------
 <br>URL：http://ilab.tongji.edu.cn/pm25/web/restful/urban-airs/search?longitude=XXX&latitude=XXX&time_point=XXX&use_station=1
+<br>eg:  http://ilab.tongji.edu.cn/pm25/web/restful/urban-airs/search?longitude=121.43153143847658&latitude=31.20642724554093
 <br>方法：<strong>GET </strong>
 <br>数据名称：longitude(经度)，latitude(纬度)
 <br>说明：
 <ul>
 <li>time_point参数是可选的，若没有，则返回最新的数据</li>
 <li>use_station参数是可选的，若设置为1，则只查询站点数据</li>
-<li>返回数据格式{status: 0或1或2, PM25: 56} 0表示没有对应的数据，1表示数据来源于UrbanAir，2表示数据来源于PM25IN</li>
+<li><strong>返回数据格式{status: 0或1, message: XXXX, data:{}} data是object，status=1表示成功，data的source=1表示数据来源于UrbanAir，source=2表示数据来源于PM25IN</strong></li>
 </ul>
-<br>-----------------历史查询-----------------------------
-<br>URL：http://ilab.tongji.edu.cn/pm25/web/restful/urban-airs/search-history?longitude=XXX&latitude=XXX&time_point=XXX&use_station=1
+<br>
+<br>
+<br>-----------------<strong>批量查询历史</strong>-----------------------------
+<br>URL：http://ilab.tongji.edu.cn/pm25/web/restful/urban-airs/search-history?longitude=XXX&latitude=XXX&time_point=XXX&use_station=X
+<br>eg:  http://ilab.tongji.edu.cn/pm25/web/restful/urban-airs/search-history?longitude=121.43153143847658&latitude=31.20642724554093&time_point=2015-12-01
 <br>方法：<strong>GET </strong>
 <br>数据名称：longitude(经度)，latitude(纬度)，time_point（日期）
-<br>说明：
+<br>说明：查询某天24条记录
 <ul>
-<li>use_station参数是可选的，若设置为1，则直接查询站点数据，否则先查询UrbanAir数据，若有完整的24个，则返回；若不完整，返回站点数据。（查询24条UrbanAir数据需要200-250秒时间）</li>
-<li>返回数据格式{status: 1或2, data: []} 1表示UrbanAir数据，2表示PM25数据</li>
+<li>use_station参数是可选的，若设置为1，则直接查询站点数据</li>
+<li><strong>返回数据格式{status: 0或1, message:XXXX, data: [data1, data2...]} status=1表示成功返回数据,data是一个数组，不保证其长度为24</strong></li>
 </ul>
 <br>URL：http://ilab.tongji.edu.cn/pm25/web/restful/urban-airs/latest-days?longitude=XXX&latitude=XXX&days=N
 <br>方法：<strong>GET </strong>
@@ -31,7 +46,9 @@
 
 
 <br>
-<br>----------------用户注册及管理接口------------------------
+<br>
+<br>
+<br>----------------<strong>用户注册及管理接口</strong>------------------------
 <br><strong>1. 注册</strong>
 <br>URL:http://ilab.tongji.edu.cn/pm25/web/restful/users/logon
 <br>方法：<strong>POST</strong>
@@ -45,10 +62,11 @@
 <br>'firstname' : "1",//姓
 <br>'lastname' : "1", //名
 <br>'sex' : "1",//1表示男 2表示女
-<br>'phone': "1388888888"
+<br>'phone': "1388888888",
+<br>'code': "15476767" //邀请码
 <br>}
 </div>
-<br>Response数据{status: 0或1, access_token: XCASDADAWE23123, userid: 9} 0表示用户名或者邮箱已被注册 1表示注册成功
+<br>Response数据{status: 0或1, access_token: XCASDADAWE23123, userid: 9, message: "result information"} <strong>-1参数不对，0已被注册 1注册成功 2邀请码错误</strong>
 <br>
 <br>
 <br><strong>2. 登录</strong>
@@ -85,7 +103,9 @@
 
 
 <br>
-<br>-----------------手机数据接口-----------------------
+<br>
+<br>
+<br>-----------------<strong>手机数据接口</strong>-----------------------
 <br><strong>1. 单个上传（即将失效）</strong>
 <br>URL：http://ilab.tongji.edu.cn/pm25/web/restful/mobile-data/create
 <br>方法：<strong>POST</strong>
@@ -116,17 +136,20 @@
 <div style="padding-left: 30px;">
 <br>{'data': [{data1}, {data2}, {data3}...]}
 <br>返回{'succeed_count': N} 成功写入N条记录
+<br><strong>Note: there is a unique key(userid, time_point)!!!It will fail to insert two data with a same unique key!</strong>
 </div>
 
 <br><strong>3. 读取</strong>
 <br>URL：http://ilab.tongji.edu.cn/pm25/web/restful/mobile-datas
 <br>方法：GET
 <br>参数：userid和time_point为必需参数
-<br>示例：http://localhost/pm25/web/restful/mobile-datas?userid=1&time_point=2015-08-20
+<br>示例：http://ilab.tongji.edu.cn/pm25/web/restful/mobile-datas?userid=1&time_point=2015-08-20
 <br>
-<br>-----------------805设备数据接口-----------------------
+<br>
+<br>
+<br>-----------------<strong>805设备数据接口</strong>-----------------------
 <br>URL：http://ilab.tongji.edu.cn/pm25/web/restful/device-datas
 <br>方法：<strong>GET</strong>
-<br>参数：devid和time_point为必需参数
+<br>参数：[devid=X&time_point=2016-05-14 21:00:00]->return a single data; -------  [devid=X&time_point=2016-05-14]->return all data of one day
 <br>示例：http://ilab.tongji.edu.cn/pm25/web/restful/device-datas?devid=1000-A215&time_point=2015-08-26
 </html>

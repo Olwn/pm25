@@ -106,6 +106,7 @@ $config = [
                     'create/data_device' => 'restful/create/data_device',
                     'create/data_mobile' => 'restful/create/data_mobile',
                     'create/data_urban'  => 'restful/create/urban_air',
+					'test' => 'restful/check-token/test'
        
             ],
         ],

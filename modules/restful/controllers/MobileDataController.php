@@ -5,7 +5,7 @@ namespace app\modules\restful\controllers;
 use Yii;
 use yii\data\ActiveDataProvider;
 
-class MobileDataController extends \yii\rest\ActiveController
+class MobileDataController extends CheckTokenControllerr
 {
     public $modelClass = 'app\models\MobileData';
 
@@ -17,9 +17,7 @@ class MobileDataController extends \yii\rest\ActiveController
     public function actions()
     {
         $actions = parent::actions();
-
         $actions['index']['prepareDataProvider'] = [$this, 'prepareDataProvider'];
-
         return $actions;
     }
 
@@ -36,10 +34,12 @@ class MobileDataController extends \yii\rest\ActiveController
 
     public function actionUpload()
     {
-        $data = Yii::$app->request->post();
         $result = array(
             'succeed_count' => 0
             );
+		$token_status = Yii::$app->getResponse()->content['token_status'];
+		if($token_status == 0) return $result; 
+        $data = Yii::$app->request->post();
 
         foreach ($data['data'] as $columns) {
             $result['succeed_count']  += DefaultController::saveModel($this->modelClass, $columns);

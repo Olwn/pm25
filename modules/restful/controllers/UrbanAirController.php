@@ -6,7 +6,7 @@ use Yii;
 use yii\data\ActiveDataProvider;
 date_default_timezone_set('PRC');
 
-class UrbanAirController extends \yii\rest\ActiveController
+class UrbanAirController extends CheckTokenController
 {
     public $modelClass = 'app\models\UrbanAir';
 
@@ -60,6 +60,7 @@ class UrbanAirController extends \yii\rest\ActiveController
             $j = 0;
             $result = array();
             $station_code = $this->queryStationCode($conditions['longitude'], $conditions['latitude']);
+			$ret['station_code']=$station_code;
             for ($i=0; $i < 24; $i++) 
             { 
                 $time_point = $date. ' ';
@@ -186,7 +187,7 @@ class UrbanAirController extends \yii\rest\ActiveController
         for($x=0; $x<count($models); $x++) {
             # code...
             $model = $models[$x];
-            $distance = abs(($model['longitude'] - $lon) * ($model['latitude'] - $lat));
+			$distance = self::distance($model['latitude'], $model['longitude'], $lat, $lon);
             if($distance < $min_diff)
             {
                 $index = $x;
@@ -248,14 +249,35 @@ class UrbanAirController extends \yii\rest\ActiveController
 
         $min_diff = 999999;
         $station_code = NULL;
-        foreach ($models as $model) {
-            $area = abs(($model['longitude'] - $longitude)*($model['latitude'] - $latitude));
-            if($area < $min_diff)
+		foreach ($models as $model) {
+			$lat1 = $model['latitude'];
+			$lon1 = $model['longitude'];
+			$lat2 = $latitude;
+			$lon2 = $longitude;
+			$dist = self::distance($lat1, $lon1, $lat2, $lon2);
+			 
+            if($dist < $min_diff)
             {
-                $min_diff = $area;
+                $min_diff = $dist;
                 $station_code = $model['station_code'];
             }
         }
         return $station_code;
+    }
+    public static function distance($latitudeFrom, $longitudeFrom, $latitudeTo, $longitudeTo, $earthRadius = 6371000)
+    {
+      // convert from degrees to radians
+      $latFrom = deg2rad($latitudeFrom);
+      $lonFrom = deg2rad($longitudeFrom);
+      $latTo = deg2rad($latitudeTo);
+      $lonTo = deg2rad($longitudeTo);
+
+      $lonDelta = $lonTo - $lonFrom;
+      $a = pow(cos($latTo) * sin($lonDelta), 2) +
+        pow(cos($latFrom) * sin($latTo) - sin($latFrom) * cos($latTo) * cos($lonDelta), 2);
+      $b = sin($latFrom) * sin($latTo) + cos($latFrom) * cos($latTo) * cos($lonDelta);
+
+      $angle = atan2(sqrt($a), $b);
+      return $angle * $earthRadius;
     }
 }
