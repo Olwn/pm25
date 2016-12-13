@@ -5,9 +5,9 @@ namespace app\modules\restful\controllers;
 use Yii;
 use yii\data\ActiveDataProvider;
 
-class MobileDataController extends \yii\rest\ActiveController
+class NewMobileDataController extends CheckTokenController
 {
-    public $modelClass = 'app\models\MobileData';
+    public $modelClass = 'app\models\NewMobileData';
 
     public function actionIndex()
     {
@@ -35,10 +35,20 @@ class MobileDataController extends \yii\rest\ActiveController
     public function actionUpload()
     {
         $result = array(
-            'succeed_count' => 0
+            'succeed_count' => 0,
+			'message' => ''
             );
-		//$token_status = Yii::$app->getResponse()->content['token_status'];
-		//if($token_status == 0) return $result; 
+		$token_status = Yii::$app->getResponse()->content['token_status'];
+		if($token_status == -1)
+		{
+			$result['message'] = 'no token';
+			return $result; 
+		}
+		if($token_status == 0)
+		{
+			$result['message'] = 'invalid token';
+			return $result; 
+		}
         $data = Yii::$app->request->post();
 
         foreach ($data['data'] as $columns) {
@@ -51,7 +61,7 @@ class MobileDataController extends \yii\rest\ActiveController
     {
         $query = (new \yii\db\Query())
             ->select('*')
-            ->from('data_mobile');
+            ->from('data_mobile_new');
             
         if(strlen($conditions['time_point']) < 15 )
         {

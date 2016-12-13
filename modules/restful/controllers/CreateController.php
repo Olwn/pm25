@@ -94,6 +94,7 @@ class CreateController extends Controller
 				}
 			}
         }
+		/**
         unset($allStationsJsonData);
         unset($mixed);
         
@@ -119,6 +120,7 @@ class CreateController extends Controller
         }
         unset($allCitiesJsonData);
         unset($mixed);
+		**/
     }
 
     /**

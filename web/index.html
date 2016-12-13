@@ -6,7 +6,7 @@
 <br>数据查询和上传必须带一个Token，其目的是访问合法性检查。用户每次登录时会生成一个token，登录接口的返回值包含此值。
 <br>服务器为用户保留最近的两次登录生成的Token，即最新的和上一次登录的。
 <br>
-<br>使用方法：在查询或登录接口加入access_token参数(GET接口添加到URL中，POST请求添加到上传内容中)，
+<br>使用方法：在查询或上传接口加入access_token参数(GET接口添加到URL中，POST请求添加到上传内容中)，
 <br>返回值新增token_status(1=最新的token，2=过期，0=无此用户)和last_login(最后登录时间)。
 <br>客户端在查询或者上传时，若token_status=1，一切正常；若token_status=2，则表明帐号在其他地方登录，此时应该上传last_login之前的数据，然后退出登录。
 <br>无效的token不影响查询数据，但无法上传数据。
@@ -21,17 +21,17 @@
 <br>说明：
 <ul>
 <li>time_point参数是可选的，若没有，则返回最新的数据</li>
-<li>use_station参数是可选的，若设置为1，则只查询站点数据</li>
+<li>use_station参数是可选的，若设置为1，则只查询PM25in数据来源</li>
 <li><strong>返回数据格式{status: 0或1, message: XXXX, data:{}} data是object，status=1表示成功，data的source=1表示数据来源于UrbanAir，source=2表示数据来源于PM25IN</strong></li>
 </ul>
 <br>
 <br>
 <br>-----------------<strong>批量查询历史</strong>-----------------------------
-<br>URL：http://ilab.tongji.edu.cn/pm25/web/restful/urban-airs/search-history?longitude=XXX&latitude=XXX&time_point=XXX&use_station=X
+<br>URL：http://ilab.tongji.edu.cn/pm25/web/restful/urban-airs/search-history?longitude=XXX&latitude=XXX&time_point=XXXX
 <br>eg:  http://ilab.tongji.edu.cn/pm25/web/restful/urban-airs/search-history?longitude=121.43153143847658&latitude=31.20642724554093&time_point=2015-12-01
 <br>方法：<strong>GET </strong>
 <br>数据名称：longitude(经度)，latitude(纬度)，time_point（日期）
-<br>说明：查询某天24条记录
+<br>说明：查询某天24条记录，仅查询PM25in数据
 <ul>
 <li>use_station参数是可选的，若设置为1，则直接查询站点数据</li>
 <li><strong>返回数据格式{status: 0或1, message:XXXX, data: [data1, data2...]} status=1表示成功返回数据,data是一个数组，不保证其长度为24</strong></li>

@@ -13,7 +13,9 @@ class CheckTokenController extends \yii\rest\ActiveController
     public function afterAction($action, $result)
 	{
 		$result = parent::afterAction($action, $result);
-		$result += Yii::$app->getResponse()->content;
+		$token_info = Yii::$app->getResponse()->content;
+		if(!is_null($token_info))
+			$result += Yii::$app->getResponse()->content;
 		return $result;
 
 	}
@@ -21,7 +23,13 @@ class CheckTokenController extends \yii\rest\ActiveController
 	{
 		$request = Yii::$app->request;
 		$paras = $request->isPost ? $request->post() : $request->get(); 
-		if(!isset($paras['access_token'])) return false;
+		if(!isset($paras['access_token']))
+		{
+
+        	Yii::$app->getResponse()->content = array('token_status' => -1, 'last_login' => '');
+			return parent::beforeAction($action);
+		}
+
         $user1 = \app\models\User::find()->where(['access_token' => $paras['access_token']])->one();
         $user2 = \app\models\User::find()->where(['old_token' => $paras['access_token']])->one();
 		$token_status = 0;

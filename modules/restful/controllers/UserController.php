@@ -150,7 +150,7 @@ class UserController extends \yii\rest\ActiveController
         $mail->setSubject("Reset Password");  
         //$mail->setTextBody('zheshisha ');   //发布纯文字文本
         $mail->setHtmlBody("Please click the link to reset your password"
-                            . "<br>" . 'http://ilab.tongji.edu.cn/pm25/web/site/reset'. '?name=' . $user->name . '&amp;' . 'access_token=' . $user->access_token);    //发布可以带html标签的文本
+                            . "<br>" . 'http://ilab.tongji.edu.cn/pm25/web/site/reset'. '?name=' . $user->name . '&amp;' . 'code=' . $user->password);    //发布可以带html标签的文本
         if($mail->send())  
             $result['status'] = 1;
         else  
@@ -162,17 +162,17 @@ class UserController extends \yii\rest\ActiveController
     public function actionGettoken()
     {
     	$paras = Yii::$app->request->post();
-    	$token = md5($paras['password'], false);
+    	$md5_code = md5($paras['password'], false);
     	$user = \app\models\User::find()->where(['name' => $paras['name']])->one();
     	/*
     	$result = array()
     	{
 
     	};*/
-    	if($user != NULL && $user->access_token == $token)
+    	if($user != NULL && $user->password == $md5_code)
     	{
     		return array(
-    			'token' => $token,
+    			'access_token' => $user->access_token,
     		);
     	}
     	return "error";
@@ -188,11 +188,11 @@ class UserController extends \yii\rest\ActiveController
         $paras = Yii::$app->request->post();
         $token = md5($paras['password'], false);
         $user = \app\models\User::find()->where(['name' => $paras['name']])->one();
-        if($user != NULL && $user->access_token == $paras['access_token'])
+        if($user != NULL && $user->password == $paras['code'])
         {
-            $user->access_token = $token;
+            $user->password = $token;
             $result['status'] = 1;
-            $result['access_token'] = $token;
+            //$result['access_token'] = $token;
             $user->update();
         }
         return $result;
