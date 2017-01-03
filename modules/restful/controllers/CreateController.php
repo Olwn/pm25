@@ -84,7 +84,7 @@ class CreateController extends Controller
         }
         else 
         {
-            echo "Dealing with " . count($mixed) . " records.";
+            //echo "Dealing with " . count($mixed) . " records.";
 			if (count($mixed) != 0)
 			{
 				$class = 'app\models\AirQuality';
@@ -259,12 +259,7 @@ class CreateController extends Controller
         $urbanData->latitude = $latitude;
         $urbanData->city = $cityId;
 
-		$am_pm = '';
-		if(strpos($mixed->UpdateTime, 'PM') !== false)
-				$am_pm = 'A';
-		else
-				$am_pm = 'a';
-        $t = \DateTime::createFromFormat("Y-m-d h:i " . $am_pm, date('Y-m-d ') . $mixed->UpdateTime)->format('Y-m-d H:i:s');
+        $t = \DateTime::createFromFormat("Y-m-d h:i A", date('Y-m-d ') . $mixed->UpdateTime)->format('Y-m-d H:i:s');
         $urbanData->time_point = $t; 
         
         $urbanData->save(false);

@@ -220,6 +220,7 @@ class UrbanAirController extends CheckTokenController
     public function queryDatabasePM25($longitude, $latitude, $time)
     {
         $station_code = $this->queryStationCode($longitude, $latitude);
+		if (is_null($station_code)) return NULL;
         $query = (new\yii\db\Query())
                 ->select('*')
                 ->from('air_quality')

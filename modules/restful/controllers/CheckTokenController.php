@@ -23,6 +23,7 @@ class CheckTokenController extends \yii\rest\ActiveController
 	{
 		$request = Yii::$app->request;
 		$paras = $request->isPost ? $request->post() : $request->get(); 
+		//echo $paras['access_token'];
 		if(!isset($paras['access_token']))
 		{
 

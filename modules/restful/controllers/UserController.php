@@ -105,11 +105,11 @@ class UserController extends \yii\rest\ActiveController
         if(md5($paras['password']) == $user->password)
         {
             $result['status'] = 1;
-			$token = bin2hex(openssl_random_pseudo_bytes(16));
-			$user->old_token = $user->access_token;
-			$user->access_token = $token;
-			$user->last_login = date('Y-m-d H:i:s', time());
-			$user->save();
+		$token = bin2hex(openssl_random_pseudo_bytes(16));
+		$user->old_token = $user->access_token;
+		$user->access_token = $token;
+		$user->last_login = date('Y-m-d H:i:s', time());
+		$user->save();
             $result['access_token'] = $token;
             $result['userid'] = $user->id;
             $result['name'] = $user->name;

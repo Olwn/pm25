@@ -36,25 +36,62 @@ class NewMobileDataController extends CheckTokenController
     {
         $result = array(
             'succeed_count' => 0,
-			'message' => ''
+	    'message' => ''
             );
-		$token_status = Yii::$app->getResponse()->content['token_status'];
-		if($token_status == -1)
-		{
-			$result['message'] = 'no token';
-			return $result; 
-		}
-		if($token_status == 0)
-		{
-			$result['message'] = 'invalid token';
-			return $result; 
-		}
-        $data = Yii::$app->request->post();
+	
+	$token_status = Yii::$app->getResponse()->content['token_status'];
+	if($token_status == -1)
+	{
+		$result['message'] = 'no token';
+		return $result; 
+	}
+	if($token_status == 0)
+	{
+		$result['message'] = 'invalid token';
+		return $result; 
+	}
 
+        $data = Yii::$app->request->post();
+	if(count($data['data'])==0){
+		$result['message'] = 'no data';
+		return $result;
+	}
         foreach ($data['data'] as $columns) {
-            $result['succeed_count']  += DefaultController::saveModel($this->modelClass, $columns);
+            $ret = self::saveModel($this->modelClass, $columns);
+	    $result['succeed_count'] += $ret['count'];
+	    $result['message'] = $result['message'] . json_encode($ret['info']);
         }
         return $result;
+    }
+
+    public static function saveModel($class, $data)
+    {
+        $model = new $class();        
+        foreach ($model->attributes as $key => $value) {
+            if(isset($data[$key]))
+                $model->__set($key, $data[$key]);
+        }
+        $ret = array('count' => 0, 'info'=> ''); 
+        try
+        {
+            if (!$model->save())
+            {
+                //\Yii::getLogger()->log("FAIL SAVING DATA: " , Logger::LEVEL_INFO);
+                //echo "FAIL SAVING DATA: \n" . $value;
+				$ret['info'] = $model->getFirstErrors() . json_encode($data);
+				return $ret;
+            }
+			$ret['count'] = 1;
+            return $ret;
+        }
+        catch (\Exception $e) 
+        {
+            //echo 'EXCEPTION: '. $e->getMessage(), "\n";
+            //\Yii::getLogger()->log("FAIL SAVING DATA: " . $e->getMessage(), Logger::LEVEL_INFO);
+			$ret['count'] = 0;
+			$ret['info'] = $e->getMessage() . 'Exception!!';
+			return $ret;
+        }
     }
 
     public function queryWithConditions($conditions)
