@@ -57,8 +57,12 @@ class DeviceDataController extends CheckTokenController
             ->from('data_device');
             
 
-
-        if(strlen($conditions['time_point']) < 15)
+        if(!isset($conditions['time_point']))
+        {
+            $query->where(['=', 'devid', $conditions['devid']])
+                  ->orderBy(['time_point' => SORT_DESC])->limit(1);
+        }
+        else if(strlen($conditions['time_point']) < 15)
         {
             $query->where(['=', "DATE_FORMAT(time_point, '%Y-%m-%d')", $conditions['time_point']]);
         	unset($conditions['time_point']);

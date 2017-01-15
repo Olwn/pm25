@@ -150,7 +150,7 @@ class UserController extends \yii\rest\ActiveController
         $mail->setSubject("Reset Password");  
         //$mail->setTextBody('zheshisha ');   //发布纯文字文本
         $mail->setHtmlBody("Please click the link to reset your password"
-                            . "<br>" . 'http://ilab.tongji.edu.cn/pm25/web/site/reset'. '?name=' . $user->name . '&amp;' . 'code=' . $user->password);    //发布可以带html标签的文本
+                            . "<br>" . 'http://54.199.158.232/pm25/web/site/reset'. '?name=' . $user->name . '&amp;' . 'code=' . $user->password);    //发布可以带html标签的文本
         if($mail->send())  
             $result['status'] = 1;
         else  

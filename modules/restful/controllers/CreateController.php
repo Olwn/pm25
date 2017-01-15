@@ -181,7 +181,7 @@ class CreateController extends Controller
                     }
 
 					$t = getdate($value->data[0]->t);
-					$t_cov = mktime($t['hours'],round($t['minutes']/30)*30,0,$t['mon'],$t['mday'],$t['year']);
+					$t_cov = mktime($t['hours'],round($t['minutes']/15)*15,0,$t['mon'],$t['mday'],$t['year']);
 					//$t_cov = mktime($t['hours'],$t['minutes'],0,$t['mon'],$t['mday'],$t['year']);
 					$deviceData->time_point = date('Y-m-d H:i:s',$t_cov);
                     try{
