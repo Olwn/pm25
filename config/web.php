@@ -33,7 +33,7 @@ $config = [
                 'class' => 'Swift_SmtpTransport',  
                 'host' => 'smtp.qq.com',  //每种邮箱的host配置不一样
                 'username' => '386765657@qq.com',  
-                'password' => '27271992olccnm',  
+                'password' => '',  
                 'port' => '465',  
                 'encryption' => 'ssl',
                 ],   
