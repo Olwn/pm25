@@ -26,28 +26,35 @@ class DeviceDataController extends CheckTokenController
     {
         $conditions = Yii::$app->request->get();
         $data = $this->queryWithConditions($conditions)->models;;
-		foreach($data as &$val)
-		{
-				$val = array(
-					'PM25' => $val['pm25'],
-					'time_point' => $val['time_point']
-				);
-		}
-		if(count($data) == 0)
-		{
-				return array(
-						'status' => 0,
-						'message' => 'no data',
-						'data' => ''
-				);
-		}
-		$ret = array(
-				'status' =>  1,
-				'message' => 'success',
-				'data' => $data
+	foreach($data as &$val)
+	{
+		$val = array(
+			'PM25' => $val['pm25'],
+			'time_point' => $val['time_point']
 		);
-		return $ret;
-
+	}
+	if(count($data) == 0)
+	{
+		return array(
+			'status' => 0,
+			'message' => 'no data',
+			'data' => ''
+		);
+	}
+	if(count($data) == 1)
+	{
+		return array(
+			'status' => 1,
+			'message' => 'one data',
+			'data' => $data[0]
+		);
+	}
+	$ret = array(
+		'status' =>  1,
+		'message' => 'success',
+		'data' => $data
+	);
+	return $ret;
     }
 
     public function queryWithConditions($conditions)
