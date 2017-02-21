@@ -110,7 +110,7 @@ class SiteController extends Controller
     {
         $paras = Yii::$app->request->post();       
         $user = User::find()->where(['name' => $paras['ResetForm']['name']])->one();
-        $user->access_token = md5($paras['ResetForm']['password'], false);
+        $user->password = md5($paras['ResetForm']['password'], false);
         $user->update();
         return 'succees';
         //$user

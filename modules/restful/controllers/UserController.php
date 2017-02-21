@@ -5,10 +5,11 @@ namespace app\modules\restful\controllers;
 use Yii;
 use yii\data\ActiveDataProvider;
 
+date_default_timezone_set("Asia/Shanghai");
 
 class UserController extends \yii\rest\ActiveController
 {
-	public $modelClass = 'app\models\User';
+    public $modelClass = 'app\models\User';
 
     public function actionIndex()
     {
@@ -79,7 +80,9 @@ class UserController extends \yii\rest\ActiveController
 
     public function actionTest()
     {
-        return 'test';
+        //return time();;
+        date_default_timezone_set("Asia/Shanghai");
+	return date('Y-m-d H:i:s', time());
     }
     public function actionLogin()
     {
@@ -105,11 +108,11 @@ class UserController extends \yii\rest\ActiveController
         if(md5($paras['password']) == $user->password)
         {
             $result['status'] = 1;
-		$token = bin2hex(openssl_random_pseudo_bytes(16));
-		$user->old_token = $user->access_token;
-		$user->access_token = $token;
-		$user->last_login = date('Y-m-d H:i:s', time());
-		$user->save();
+	    $token = bin2hex(openssl_random_pseudo_bytes(16));
+	    $user->old_token = $user->access_token;
+	    $user->access_token = $token;
+	    $user->last_login = date('Y-m-d H:i:s', time());
+            $user->save();
             $result['access_token'] = $token;
             $result['userid'] = $user->id;
             $result['name'] = $user->name;
@@ -150,7 +153,7 @@ class UserController extends \yii\rest\ActiveController
         $mail->setSubject("Reset Password");  
         //$mail->setTextBody('zheshisha ');   //发布纯文字文本
         $mail->setHtmlBody("Please click the link to reset your password"
-                            . "<br>" . 'http://54.199.158.232/pm25/web/site/reset'. '?name=' . $user->name . '&amp;' . 'code=' . $user->password);    //发布可以带html标签的文本
+                            . "<br>" . 'http://106.14.63.93/pm25/web/site/reset'. '?name=' . $user->name . '&amp;' . 'code=' . $user->password);    //发布可以带html标签的文本
         if($mail->send())  
             $result['status'] = 1;
         else  
@@ -183,16 +186,17 @@ class UserController extends \yii\rest\ActiveController
     {
         $result = array(
             'status' => -1,
-            'access_token' => ''
+            'access_token' => '',
+            'message' => 'user is invalid or token is wrong.'
             );
         $paras = Yii::$app->request->post();
         $token = md5($paras['password'], false);
         $user = \app\models\User::find()->where(['name' => $paras['name']])->one();
-        if($user != NULL && $user->password == $paras['code'])
+        if($user != NULL && $user->access_token == $paras['access_token'])
         {
             $user->password = $token;
             $result['status'] = 1;
-            //$result['access_token'] = $token;
+            $result['message'] = 'Password updated!';
             $user->update();
         }
         return $result;
