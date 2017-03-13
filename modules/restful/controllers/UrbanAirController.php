@@ -147,10 +147,10 @@ class UrbanAirController extends CheckTokenController
     public function queryDataBaseHistory()
     {
         $conditions = Yii::$app->request->get();
-		if (!isset($conditions['latitude'], $conditions['longitude'], $conditions['time_point']))
-		{
-			return null;
-		}
+	if (!isset($conditions['latitude'], $conditions['longitude'], $conditions['time_point']))
+	{
+	    return null;
+	}
 
         if(isset($conditions['use_station']) && $conditions['use_station']=='1')
             return $this->queryDatabasePM25($conditions['longitude'], $conditions['latitude'], $conditions['time_point']);
@@ -174,28 +174,16 @@ class UrbanAirController extends CheckTokenController
         
         $lat = (double)$latitude;
         $lon = (double)$longitude;
-        $query->AndWhere(['between', 'latitude', $lat-0.05, $lat+0.05]);
-        $query->AndWhere(['between', 'longitude', $lon-0.05, $lon+0.05]);
+        $query->AndWhere(sprintf('latitude=%.3f', $lat));
+        $query->AndWhere(sprintf('longitude=%.3f', $lon));
 
-        $model = new $this->modelClass;
-        $models = $query->all();
-        if(count($models) == 0)
-            return NULL;
-
-        $min_diff = 99999;
-        $index = 0;
-        for($x=0; $x<count($models); $x++) {
-            # code...
-            $model = $models[$x];
-			$distance = self::distance($model['latitude'], $model['longitude'], $lat, $lon);
-            if($distance < $min_diff)
-            {
-                $index = $x;
-                $min_diff = $distance;
-            }
-        }
-
-        return array('PM25' => $models[$index]['pm25'], 'AQI' => $models[$index]['aqi'], 'time_point' => $models[$index]['time_point'], 'source' => 1);
+        $row = $query->all();
+        if(!$row) return NULL;
+        return array(
+            'PM25' => $row[0]['pm25'],
+            'AQI' => $row[0]['aqi'],
+            'time_point' => $row[0]['time_point'], 
+            'source' => 1);
     }
     
     public function queryDatabasePM25ByCode($station_code, $time)

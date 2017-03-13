@@ -32,14 +32,13 @@ class CreateController extends Controller
 {
     private $urlStations = "http://www.pm25.in/api/querys/all_cities.json";
     private $urlCities = "http://www.pm25.in/api/querys/aqi_ranking.json";
-    //private $urlCities = "http://www.pm25.in/api/querys/pm2_5.json?city=珠海";
     private $urlDevices = "http://api.novaecs.com/?key=aidhe38173yfh&fun=getLastData&param=1000-A215,1000-A043,1000-A2E7,1000-A2E6";
 	//private $devices = array('1000-A215', '1000-A043'); 
     private $urlUrbanAir = "http://urbanair.msra.cn/U_Air/SearchGeoPoint?Culture=zh-CN&Standard=0";
     private $cities = array(
-        "Beijing" => "http://urbanair.msra.cn/U_Air/GetAllCity?CityId=001&Standard=0&category=1&station=false&Lat_bottom=39.600532656689126&Lat_up=40.22306084378363&Lng_left=115.74797864062502&Lng_right=117.06633801562502",
-        "Shanghai" => "http://urbanair.msra.cn/U_Air/GetAllCity?CityId=002&Standard=0&category=1&station=false&Lat_bottom=30.7&Lat_up=31.7&Lng_left=120.8&Lng_right=122.1",
-        "Xiamen" => "http://urbanair.msra.cn/U_Air/GetAllCity?CityId=288&Standard=0&category=1&station=false&Lat_bottom=24.2&Lat_up=24.7&Lng_left=117.5&Lng_right=118.6",
+        "Beijing" => array(39.6, 40.2, 115.7,117.0),
+        "Shanghai" => array(30.7,31.7, 120.8,122.1),
+        "Xiamen" => array(24.2, 24.7, 117.5, 118.6),
         );
     private $cityIds = array(
         "Beijing" => 1,
@@ -180,19 +179,17 @@ class CreateController extends Controller
                            }   
                     }
 
-					$t = getdate($value->data[0]->t);
-					$t_cov = mktime($t['hours'],round($t['minutes']/15)*15,0,$t['mon'],$t['mday'],$t['year']);
-					//$t_cov = mktime($t['hours'],$t['minutes'],0,$t['mon'],$t['mday'],$t['year']);
-					$deviceData->time_point = date('Y-m-d H:i:s',$t_cov);
-                    try{
-                        //Liechuan ou: If the parameter is 'true', the save proccedure would be failed. I seems the model rules is bad!?!
-                        if(!$deviceData->save(false))
-                            echo "failed";
-                    }
-                    catch(\Exception $e)
-                    {
-                        echo $e->getMessage();
-                    }
+		$t = getdate($value->data[0]->t);
+		$t_cov = mktime($t['hours'],round($t['minutes']/15)*15,0,$t['mon'],$t['mday'],$t['year']);
+		//$t_cov = mktime($t['hours'],$t['minutes'],0,$t['mon'],$t['mday'],$t['year']);
+		$deviceData->time_point = date('Y-m-d H:i:s',$t_cov);
+                try{
+                    if(!$deviceData->save(false))
+                        echo "failed";
+                }
+                catch(\Exception $e){
+                    echo $e->getMessage();
+                }
                     
                 }
             }
@@ -212,14 +209,14 @@ class CreateController extends Controller
         $urls = array();
         $c = 0;
 
-        foreach ($this->cities as $city => $allpoints_url) {
-            $points = file_get_contents($allpoints_url);
-            $points = json_decode($points);
-            
-            foreach ($points->AllCity as $point) {
-                $Lon = ($point->Lng_max + $point->Lng_min)/2;
-                $Lat = ($point->Lat_max + $point->Lat_min)/2;
-                $path = $this->urlUrbanAir . "&longitude=" . $Lon . "&latitude=" . $Lat . "&cityId=" . $this->cityIds[$city];
+        foreach ($this->cities as $city => $region) {
+            $step = 0.001;
+       	    $lats = range($region[0], $region[1], $step);
+            $lngs = range($region[2], $region[3], $step);     
+            for ($i = 0; $i < count($lats); $i++)
+            for ($j = 0; $j < count($lngs); $j++)
+            {
+                $path = $this->urlUrbanAir . "&longitude=" . $lngs[$j] . "&latitude=" . $lats[$i] . "&cityId=" . $this->cityIds[$city];
                 $urls[$c] = $path;
                 $c = $c + 1;
                 if($c == 10)
@@ -259,7 +256,7 @@ class CreateController extends Controller
         $urbanData->latitude = $latitude;
         $urbanData->city = $cityId;
 
-        $t = \DateTime::createFromFormat("Y-m-d h:i A", date('Y-m-d ') . $mixed->UpdateTime)->format('Y-m-d H:i:s');
+        $t = date('Y-m-d H');
         $urbanData->time_point = $t; 
         
         $urbanData->save(false);
