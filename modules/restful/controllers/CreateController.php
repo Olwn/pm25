@@ -210,7 +210,7 @@ class CreateController extends Controller
         $c = 0;
 
         foreach ($this->cities as $city => $region) {
-            $step = 0.001;
+            $step = 0.01;
        	    $lats = range($region[0], $region[1], $step);
             $lngs = range($region[2], $region[3], $step);     
             for ($i = 0; $i < count($lats); $i++)
@@ -219,13 +219,13 @@ class CreateController extends Controller
                 $path = $this->urlUrbanAir . "&longitude=" . $lngs[$j] . "&latitude=" . $lats[$i] . "&cityId=" . $this->cityIds[$city];
                 $urls[$c] = $path;
                 $c = $c + 1;
-                if($c == 10)
+                if($c == 50)
                 {
                     $results = $this->rolling_curl($urls, 100);
                     foreach ($results as $key => $value) {
                         $this->saveUrbanAir($key, $value);
                     }
-                    sleep(0.2);
+                    sleep(0.1);
                     $c = 0;
                     $urls = array();
                 }

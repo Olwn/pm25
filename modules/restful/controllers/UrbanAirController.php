@@ -174,8 +174,8 @@ class UrbanAirController extends CheckTokenController
         
         $lat = (double)$latitude;
         $lon = (double)$longitude;
-        $query->AndWhere(sprintf('latitude=%.3f', $lat));
-        $query->AndWhere(sprintf('longitude=%.3f', $lon));
+        $query->AndWhere(sprintf('latitude=%.2f', $lat));
+        $query->AndWhere(sprintf('longitude=%.2f', $lon));
 
         $row = $query->all();
         if(!$row) return NULL;

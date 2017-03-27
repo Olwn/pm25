@@ -21,8 +21,8 @@ class UserController extends \yii\rest\ActiveController
     	$result = array(
     		'status' => -1,
     		'access_token' => -1,
-            'userid' => 0,
-            'message' => ''
+                'userid' => 0,
+                'message' => ''
     		);
 
     	$paras = Yii::$app->request->post();
@@ -46,19 +46,20 @@ class UserController extends \yii\rest\ActiveController
     	$user->lastname = $paras['lastname'];
     	$user->sex = $paras['sex'];
     	$user->phone = $paras['phone'];
-		$user->access_token = $user->password;
+	$user->access_token = $user->password;
+	$user->last_login = date('Y-m-d H:i:s', time());
 
     	if ($user->validate()) 
     	{
             $user->save();
-    		$result['access_token'] = $user->access_token;
-    		$result['status'] = 1;
+    	    $result['access_token'] = $user->access_token;
+    	    $result['status'] = 1;
             $result['userid'] = $user->id;           
-            $result['message'] = 'registered succesfully';
+            $result['message'] = 'registered succesfully';    
     	}
         else
         {
-            $result['message'] = 'registered failed';
+            $result['message'] = $user->getErrors();
             $result['status'] = 0;   
         }
     	return $result;
