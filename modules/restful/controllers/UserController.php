@@ -104,34 +104,34 @@ class UserController extends \yii\rest\ActiveController
         if(is_null($user))
         {
             $result['status'] = -1;
+            $result['info'] = 'no such user';
             return $result;
         }
-        if(md5($paras['password']) == $user->password)
-        {
-            $result['status'] = 1;
-	    $token = bin2hex(openssl_random_pseudo_bytes(16));
-	    $user->old_token = $user->access_token;
-	    $user->access_token = $token;
-	    $user->last_login = date('Y-m-d H:i:s', time());
-            $user->save();
-            $result['access_token'] = $token;
-            $result['userid'] = $user->id;
-            $result['name'] = $user->name;
-            $result['firstname'] = $user->firstname;
-            $result['lastname'] = $user->lastname;
-            $result['sex'] = $user->sex;
-            $result['email'] = $user->email;
-            $result['phone'] = $user->phone;
-        }
-        else
-        {
+        if(md5($paras['password']) !== $user->password){
             $result['status'] = 0;
-			$result['info']=md5($paras['password']);
-
+	    $result['info']='wrong password';
+            return $result;
         }
+	$token = bin2hex(openssl_random_pseudo_bytes(16));
+	$user->old_token = $user->access_token;
+	$user->access_token = $token;
+	$user->last_login = date('Y-m-d H:i:s', time());
+        if ($user->update(true) == false) {
+            $result['info'] = $user->getErrors();
+            return $result;   
+        }
+        $result['status'] = 1;
+        $result['access_token'] = $token;
+        $result['userid'] = $user->id;
+        $result['name'] = $user->name;
+        $result['firstname'] = $user->firstname;
+        $result['lastname'] = $user->lastname;
+        $result['sex'] = $user->sex;
+        $result['email'] = $user->email;
+        $result['phone'] = $user->phone;
         return $result;
-
     }
+
     public function actionFindPassword()
     {
         $result = array(
