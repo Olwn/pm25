@@ -32,7 +32,7 @@ class CreateController extends Controller
 {
     private $urlStations = "http://www.pm25.in/api/querys/all_cities.json";
     private $urlCities = "http://www.pm25.in/api/querys/aqi_ranking.json";
-    private $urlDevices = "http://api.novaecs.com/?key=aidhe38173yfh&fun=getLastData&param=1000-A215,1000-A043,1000-A2E7,1000-A2E6";
+    private $urlDevices = "http://api.novaecs.com/?key=aidhe38173yfh&fun=getLastData&param=1000-A215,1000-A043,1000-A2E7,1000-A2E6,1000-A3F3,1000-A3F1,1000-A3FC,1000-A3F0,1000-A3EE,1000-A3F5,1000-A3EF,1000-A3FA";
 	//private $devices = array('1000-A215', '1000-A043'); 
     private $urlUrbanAir = "http://urbanair.msra.cn/U_Air/SearchGeoPoint?Culture=zh-CN&Standard=0";
     private $cities = array(
@@ -83,43 +83,15 @@ class CreateController extends Controller
         }
         else 
         {
-            //echo "Dealing with " . count($mixed) . " records.";
-			if (count($mixed) != 0)
-			{
-				$class = 'app\models\AirQuality';
-				foreach ($mixed as $value)
-				{
-					DefaultController::saveModel($class, $value);
-				}
-			}
+            if (count($mixed) != 0)
+	    {
+		$class = 'app\models\AirQuality';
+		foreach ($mixed as $value)
+		{
+	            DefaultController::saveModel($class, $value);
+		}
+	    }
         }
-		/**
-        unset($allStationsJsonData);
-        unset($mixed);
-        
-        $allCitiesJsonData = $this->queryOnlyCitiesJSONData();
-        $mixed = json_decode($allCitiesJsonData, true);
-
-        if (isset($mixed['error']))
-        {
-            echo $mixed['error'];
-        }
-        else
-        {
-            echo "Dealing with " . count($mixed) . " records.";
-			if (count($mixed) != 0)
-			{
-				$class = 'app\models\CityAir';
-				foreach ($mixed as $value)
-				{
-					if(DefaultController::saveModel($class, $value) == false)
-                        echo "error";
-				}
-			}
-        }
-        unset($allCitiesJsonData);
-        unset($mixed);
-		**/
     }
 
     /**
@@ -137,7 +109,7 @@ class CreateController extends Controller
     public function actionData_device()
     {
         $deviceJsonData = $this->queryDeviceJSONData();
-		$deviceJsonData = substr($deviceJsonData, 3);
+	$deviceJsonData = substr($deviceJsonData, 3);
         $mixed = json_decode($deviceJsonData, false)->devs;
         if (false)
         {
