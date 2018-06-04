@@ -5,6 +5,7 @@ namespace app\modules\restful\controllers;
 use Yii;
 use yii\data\ActiveDataProvider;
 
+
 class MobileDataController extends \yii\rest\ActiveController
 {
     public $modelClass = 'app\models\MobileData';
@@ -35,14 +36,18 @@ class MobileDataController extends \yii\rest\ActiveController
     public function actionUpload()
     {
         $result = array(
-            'succeed_count' => 0
+            'succeed_count' => 0,
+            'message' => ''
             );
 		//$token_status = Yii::$app->getResponse()->content['token_status'];
 		//if($token_status == 0) return $result; 
         $data = Yii::$app->request->post();
 
         foreach ($data['data'] as $columns) {
-            $result['succeed_count']  += DefaultController::saveModel($this->modelClass, $columns);
+            $ret = NewMobileDataController::saveModel($this->modelClass, $columns);
+            $result['succeed_count']  += $ret["count"];
+            $result['message'] = $result['message'] . $ret['info'];
+
         }
         return $result;
     }

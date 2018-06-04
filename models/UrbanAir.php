@@ -19,7 +19,7 @@ class UrbanAir extends \yii\db\ActiveRecord
         return [
             [['time_point','city', 'longitude', 'latitude', 'pm25'], 'required'],
             [['aqi', 'no2', 'humidity', 'city', 'wind'], 'integer'],
-            [['pm25', 'pm10', 'humidity', 'temperature', 'longitude', 'latitude'], 'double'],
+            [['pm25', 'pm10', 'humidity', 'temperature', 'longitude', 'latitude','co','o3','so2'], 'double'],
             [['time_point'], 'string']
         ];
     }

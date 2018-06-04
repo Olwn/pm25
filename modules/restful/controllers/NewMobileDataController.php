@@ -3,6 +3,7 @@
 namespace app\modules\restful\controllers;
 
 use Yii;
+use Yii\log\Logger;
 use yii\data\ActiveDataProvider;
 
 class NewMobileDataController extends CheckTokenController
@@ -40,19 +41,24 @@ class NewMobileDataController extends CheckTokenController
             );
 	
 	$token_status = Yii::$app->getResponse()->content['token_status'];
+        $data = Yii::$app->request->post();
+        $data_str = json_encode($data);
 	if($token_status == -1)
 	{
+
+                \Yii::getLogger()->log("no token" . $data_str, Logger::LEVEL_ERROR);
 		$result['message'] = 'no token';
 		return $result; 
 	}
 	if($token_status == 0)
 	{
+                \Yii::getLogger()->log("invalid token" . $data_str, Logger::LEVEL_ERROR);
 		$result['message'] = 'invalid token';
 		return $result; 
 	}
 
-        $data = Yii::$app->request->post();
 	if(count($data['data'])==0){
+                \Yii::getLogger()->log("no data" . $data_str, Logger::LEVEL_ERROR);
 		$result['message'] = 'no data';
 		return $result;
 	}
@@ -60,6 +66,9 @@ class NewMobileDataController extends CheckTokenController
             $ret = self::saveModel($this->modelClass, $columns);
 	    $result['succeed_count'] += $ret['count'];
 	    $result['message'] = $result['message'] . json_encode($ret['info']);
+        }
+        if ($result['succeed_count'] != count($data['data'])) {
+                \Yii::getLogger()->log("Not all data are saved." . $data_str, Logger::LEVEL_ERROR);
         }
         return $result;
     }
@@ -76,21 +85,20 @@ class NewMobileDataController extends CheckTokenController
         {
             if (!$model->save())
             {
-                //\Yii::getLogger()->log("FAIL SAVING DATA: " , Logger::LEVEL_INFO);
-                //echo "FAIL SAVING DATA: \n" . $value;
-				$ret['info'] = $model->getFirstErrors() . json_encode($data);
-				return $ret;
+                $error = json_encode($model->getFirstErrors());
+                \Yii::getLogger()->log("FAIL SAVING DATA: ", $error, Logger::LEVEL_ERROR);
+                $ret['info'] = $error . json_encode($data);
+		return $ret;
             }
-			$ret['count'] = 1;
+	    $ret['count'] = 1;
             return $ret;
         }
         catch (\Exception $e) 
         {
-            //echo 'EXCEPTION: '. $e->getMessage(), "\n";
-            //\Yii::getLogger()->log("FAIL SAVING DATA: " . $e->getMessage(), Logger::LEVEL_INFO);
-			$ret['count'] = 0;
-			$ret['info'] = $e->getMessage() . 'Exception!!';
-			return $ret;
+            \Yii::getLogger()->log("FAIL SAVING DATA: " . $e->getMessage(), Logger::LEVEL_ERROR);
+            $ret['count'] = 0;
+	    $ret['info'] = $e->getMessage() . 'Exception!!';
+	    return $ret;
         }
     }
 
@@ -103,7 +111,7 @@ class NewMobileDataController extends CheckTokenController
         if(strlen($conditions['time_point']) < 15 )
         {
             $query->where(['=', "DATE_FORMAT(time_point, '%Y-%m-%d')", $conditions['time_point']]);
-        	unset($conditions['time_point']);
+            unset($conditions['time_point']);
     	}
         
 

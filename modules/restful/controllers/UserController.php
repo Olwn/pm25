@@ -3,6 +3,7 @@
 namespace app\modules\restful\controllers;
 
 use Yii;
+use Yii\log\Logger;
 use yii\data\ActiveDataProvider;
 
 date_default_timezone_set("Asia/Shanghai");

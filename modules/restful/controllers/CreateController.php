@@ -39,11 +39,15 @@ class CreateController extends Controller
         "Beijing" => array(39.6, 40.2, 115.7,117.0),
         "Shanghai" => array(30.7,31.7, 120.8,122.1),
         "Xiamen" => array(24.2, 24.7, 117.5, 118.6),
-        );
+        "Wuhan" => array(29.5, 31.3, 113.4, 115.1),
+        "Zhumadian" => array(32.9,33.1,113.9,114.1),
+   	);
     private $cityIds = array(
         "Beijing" => 1,
         "Shanghai" => 2,
         "Xiamen" => 3,
+        "Wuhan" => 4,
+	"Zhumadian" => 5,
         );
     private $datePath;
     private $token;
@@ -88,6 +92,8 @@ class CreateController extends Controller
 		$class = 'app\models\AirQuality';
 		foreach ($mixed as $value)
 		{
+                    $date_time = new \DateTime($value["time_point"]);
+                    $value["time_point"] = $date_time->format("Y-m-d H:i:s");
 	            DefaultController::saveModel($class, $value);
 		}
 	    }
@@ -220,7 +226,10 @@ class CreateController extends Controller
         $urbanData->no2 = $mixed->NO2;
         $urbanData->pm25 = $mixed->PM25;
         $urbanData->pm10 = $mixed->PM10;
-        $urbanData->wind = $mixed->Wind;
+        $urbanData->co = $mixed->CO;
+	$urbanData->o3 = $mixed->O3;
+	$urbanData->so2 = $mixed->SO2;
+       	$urbanData->wind = $mixed->Wind;
         $urbanData->pressure = $mixed->Pressure;
         $urbanData->temperature = $mixed->Temperature;
         $urbanData->humidity = $mixed->Humidity;
