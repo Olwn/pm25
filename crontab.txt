@@ -1,0 +1,9 @@
+10  * * * * curl http://localhost/pm25/web/index.php/create/data_pm25in
+*/15 * * * * curl http://localhost/pm25/web/index.php/create/data_device
+15  * * * * curl http://localhost/pm25/web/index.php/create/data_urban
+07 12 * * * python /home/download/prediction.py >> /home/download/aima.log 2>&1
+32 * * * * python /home/download/store.py >> /home/download/store.log 2>&1
+47 * * * * python /home/download/deal.py >> /home/download/deal.log 2>&1
+30 11 * * * curl http://localhost/pm25/web/pm25query/checkUserData.php >> /home/download/check.log 2>&1
+*/20 * * * * curl http://localhost/pm25/web/pm25query/urbanAirStation.php >> /home/download/urbanAirStation.log 2>&1
+0 * * * * curl http://localhost/pm25/web/pm25query/chongMingQuery.php >> /home/download/chongMingData.log 2>&1
